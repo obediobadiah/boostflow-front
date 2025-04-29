@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Create API client
 const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001',
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -50,23 +50,23 @@ interface AuthResponse {
 
 class AuthService {
   async login(email: string, password: string): Promise<AuthResponse> {
-    const response = await apiClient.post('/api/auth/login', { email, password });
+    const response = await apiClient.post('/auth/login', { email, password });
     return response.data;
   }
 
   async register(name: string, email: string, password: string, role?: string): Promise<AuthResponse> {
-    const response = await apiClient.post('/api/auth/register', { name, email, password, role });
+    const response = await apiClient.post('/auth/register', { name, email, password, role });
     return response.data;
   }
 
   async getCurrentUser() {
-    const response = await apiClient.get('/api/auth/me');
+    const response = await apiClient.get('/auth/me');
     return response.data;
   }
 
   async logout() {
     try {
-      await apiClient.post('/api/auth/logout');
+      await apiClient.post('/auth/logout');
     } catch (error) {
       console.error('Error during logout:', error);
     }

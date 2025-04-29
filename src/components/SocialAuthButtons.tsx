@@ -12,7 +12,7 @@ export function SocialAuthButtons() {
     setIsLoading(provider);
     try {
       // Get API URL from env or use default
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL';
       
       // Prepare redirect URL
       const redirectUrl = `${apiUrl}/auth/${provider}`;
