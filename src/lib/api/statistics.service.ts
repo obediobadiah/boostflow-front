@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Create API client
 const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001',
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -80,7 +80,7 @@ class StatisticsService {
   // Fetch dashboard statistics
   async getDashboardStats(): Promise<DashboardStats> {
     try {
-      const response = await apiClient.get('/api/statistics/dashboard');
+      const response = await apiClient.get('/statistics/dashboard');
       return response.data;
     } catch (error) {
       console.error('Error fetching dashboard stats:', error);
@@ -104,7 +104,7 @@ class StatisticsService {
   // Fetch active promotions
   async getActivePromotions(): Promise<PromotionStats[]> {
     try {
-      const response = await apiClient.get('/api/statistics/active-promotions');
+      const response = await apiClient.get('/statistics/active-promotions');
       return response.data;
     } catch (error) {
       console.error('Error fetching active promotions:', error);
@@ -121,7 +121,7 @@ class StatisticsService {
   // Fetch platform statistics
   async getPlatformStatistics(): Promise<PlatformStatistics> {
     try {
-      const response = await apiClient.get('/api/statistics/platforms');
+      const response = await apiClient.get('/statistics/platforms');
       return response.data;
     } catch (error) {
       console.error('Error fetching platform statistics:', error);
