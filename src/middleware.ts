@@ -41,7 +41,8 @@ export const config = {
      * - public files (e.g. robots.txt)
      * - images (public image files)
      * - logo directory (for app logos)
+     * - uploads directory (for user uploaded files)
      */
-    '/((?!_next/static|_next/image|favicon.ico|images/|public|logo/).*)',
+    '/((?!_next/static|_next/image|favicon.ico|images/|public|logo/|uploads/).*)',
   ],
 }; 

@@ -28,7 +28,12 @@ const generateImageUrl = async (imageData: string): Promise<string> => {
     }
 
     const data = await response.json();
-    return data.url;
+    console.log('Upload response:', data); // Debug the response
+    
+    // Ensure the URL has the correct format
+    const imageUrl = data.url.startsWith('/') ? `${window.location.origin}${data.url}` : data.url;
+    console.log('Generated image URL:', imageUrl);
+    return imageUrl;
   } catch (error) {
     console.error('Error uploading image:', error);
     // Fallback to a placeholder image if upload fails
@@ -77,6 +82,25 @@ export default function NewProductPage() {
 
     checkUserPermission();
   }, [router]);
+
+  // Debug: Log when images change
+  useEffect(() => { 
+    console.log('Images in form state:', form.images);
+    
+    // Check if any images start with /uploads and try to validate them
+    form.images.forEach((url, index) => {
+      if (url.startsWith('/uploads')) {
+        const fullUrl = `${window.location.origin}${url}`;
+        console.log(`Testing image ${index} accessibility:`, fullUrl);
+        
+        // Create a test image to see if it loads
+        const img = new Image();
+        img.onload = () => console.log(`Image ${index} loaded successfully:`, fullUrl);
+        img.onerror = () => console.error(`Image ${index} failed to load:`, fullUrl);
+        img.src = fullUrl;
+      }
+    });
+  }, [form.images]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -181,7 +205,9 @@ export default function NewProductPage() {
     }
     
     try {
+      console.log('Processing image:', file.name);
       const imageUrl = await processImage(file);
+      console.log('Image processed successfully, URL:', imageUrl);
       setForm(prev => ({
         ...prev,
         images: [...prev.images, imageUrl]
@@ -537,13 +563,16 @@ export default function NewProductPage() {
           
           {form.images.length > 0 && (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-              {form.images.map((url, index) => (
+              {form.images. map((url, index) => {
+                console.log('Image URL:', url); // Debug log to see the URL
+                return (
                 <div key={index} className="relative group">
                   <img 
-                    src={url} 
+                    src={url.startsWith('/') ? `${window.location.origin}${url}` : url} 
                     alt={`Product image ${index + 1}`} 
                     className="w-full h-24 object-cover rounded border"
                     onError={(e) => {
+                      console.error('Image failed to load:', url);
                       (e.target as HTMLImageElement).src = 'https://placehold.co/300x200/e2e8f0/64748b?text=Image+Error';
                     }}
                   />
@@ -555,7 +584,7 @@ export default function NewProductPage() {
                     <FiX className="h-4 w-4" />
                   </button>
                 </div>
-              ))}
+              )})}
             </div>
           )}
           

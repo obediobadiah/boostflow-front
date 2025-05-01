@@ -1,23 +1,4 @@
 {
-  "/_not-found/page": "app/_not-found/page.js",
-  "/api/upload/route": "app/api/upload/route.js",
-  "/favicon.ico/route": "app/favicon.ico/route.js",
-  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
-  "/api/social/post/route": "app/api/social/post/route.js",
-  "/page": "app/page.js",
-  "/(dashboard)/debug-auth/page": "app/(dashboard)/debug-auth/page.js",
-  "/(auth)/auth/callback/page": "app/(auth)/auth/callback/page.js",
-  "/(dashboard)/business/page": "app/(dashboard)/business/page.js",
-  "/(auth)/register/page": "app/(auth)/register/page.js",
-  "/(auth)/login/page": "app/(auth)/login/page.js",
   "/(dashboard)/home/page": "app/(dashboard)/home/page.js",
-  "/(dashboard)/marketers/page": "app/(dashboard)/marketers/page.js",
-  "/(dashboard)/marketer/page": "app/(dashboard)/marketer/page.js",
-  "/(dashboard)/products/[id]/edit/page": "app/(dashboard)/products/[id]/edit/page.js",
-  "/(dashboard)/products/[id]/page": "app/(dashboard)/products/[id]/page.js",
-  "/(dashboard)/products/new/page": "app/(dashboard)/products/new/page.js",
-  "/(dashboard)/promotions/page": "app/(dashboard)/promotions/page.js",
-  "/(dashboard)/social-accounts/page": "app/(dashboard)/social-accounts/page.js",
-  "/(dashboard)/users/page": "app/(dashboard)/users/page.js",
   "/(dashboard)/products/page": "app/(dashboard)/products/page.js"
 }

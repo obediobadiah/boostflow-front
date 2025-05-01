@@ -231,6 +231,11 @@ export const productService = {
     const response = await api.get('/products');
     return response.data;
   },
+
+  getAllProductsStatistique: async (p0: { params: { page: number; limit: number; }; }) => {
+    const response = await api.get('/products');
+    return response.data;
+  },
   getProductById: async (id: string) => {
     try {
       console.log(`Fetching product with ID: ${id}`);
@@ -324,6 +329,11 @@ export const productService = {
 export const promotionService = {
   getMyPromotions: async () => {
     const response = await api.get('/promotions');
+    return response.data;
+  },
+
+  getMyPromotionsStatistics: async (p0: { params: { page: number; limit: number; }; }) => {
+    const response = await api.get('/products');
     return response.data;
   },
   getPromotionById: async (id: string) => {
