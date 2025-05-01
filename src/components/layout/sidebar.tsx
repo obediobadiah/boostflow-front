@@ -138,12 +138,12 @@ export default function Sidebar() {
       title: 'Earnings',
       current: pathname.startsWith('/earnings'),
     },
-    {
-      href: '/social-accounts',
-      icon: <FiUsers />,
-      title: 'Social Media Accounts',
-      current: pathname.startsWith('/social-accounts'),
-    },
+    // {
+    //   href: '/social-accounts',
+    //   icon: <FiUsers />,
+    //   title: 'Social Media Accounts',
+    //   current: pathname.startsWith('/social-accounts'),
+    // },
   ];
 
   const bottomNavigation: NavigationItem[] = [

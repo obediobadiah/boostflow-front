@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
-import { writeFile } from 'fs/promises';
+import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { v4 as uuidv4 } from 'uuid';
+import fs from 'fs';
 
 export async function POST(request: Request) {
   try {
@@ -40,11 +41,20 @@ export async function POST(request: Request) {
 
     // Save file to public directory
     const publicDir = join(process.cwd(), 'public', 'uploads');
+    
+    // Create the uploads directory if it doesn't exist
+    if (!fs.existsSync(publicDir)) {
+      await mkdir(publicDir, { recursive: true });
+      console.log('Created uploads directory:', publicDir);
+    }
+    
     const filepath = join(publicDir, filename);
     await writeFile(filepath, buffer);
+    console.log('File saved at:', filepath);
 
-    // Return the URL
+    // Return the URL with origin for absolute path
     const url = `/uploads/${filename}`;
+    console.log('Returning URL:', url);
     return NextResponse.json({ url });
   } catch (error) {
     console.error('Error uploading file:', error);

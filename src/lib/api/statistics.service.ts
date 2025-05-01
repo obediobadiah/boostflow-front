@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { productService, promotionService } from '../api';
 
 // Create API client
 const apiClient = axios.create({
@@ -60,6 +61,22 @@ export interface PromotionStats {
   conversions: number;
 }
 
+export interface ProductStats {
+  id: number;
+  name: string;
+  price: string;
+  category: string;
+  commissionRate: string;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 export interface PlatformStatistics {
   platformCount: {
     facebook: number;
@@ -101,20 +118,32 @@ class StatisticsService {
     }
   }
 
-  // Fetch active promotions
-  async getActivePromotions(): Promise<PromotionStats[]> {
+
+  // the total number of Products
+
+  // Fetch active promotions with pagination
+  async getActivePromotions(page = 1, limit = 5): Promise<PaginatedResponse<PromotionStats>> {
     try {
-      const response = await apiClient.get('/statistics/active-promotions');
+      const response = await productService.getAllProductsStatistique({
+        params: { page, limit }
+      });
       return response.data;
     } catch (error) {
       console.error('Error fetching active promotions:', error);
-      
-      // Return mock data as fallback
-      return [
-        { id: 1, name: 'Premium Fitness Course', commission: '$12.50 per sale', clicks: 124, conversions: 8 },
-        { id: 2, name: 'Digital Marketing eBook', commission: '$5.00 per sale', clicks: 213, conversions: 15 },
-        { id: 3, name: 'Photography Masterclass', commission: '$25.00 per sale', clicks: 76, conversions: 4 }
-      ];
+      throw error;
+    }
+  }
+
+  // Fetch active products with pagination
+  async getActiveProducts(page = 1, limit = 5): Promise<PaginatedResponse<ProductStats>> {
+    try {
+      const response = await promotionService.getMyPromotionsStatistics({
+        params: {page, limit}
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching active products:', error);
+      throw error;
     }
   }
 

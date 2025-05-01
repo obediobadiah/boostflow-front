@@ -8,6 +8,17 @@ const nextConfig = {
       {
         source: '/api/:path*',
         destination: 'http://localhost:5001/:path*',
+        has: [
+          {
+            type: 'header',
+            key: 'x-skip-rewrite',
+            value: 'true',
+          },
+        ],
+      },
+      {
+        source: '/api/upload',
+        destination: '/api/upload',
       },
     ];
   },
@@ -22,7 +33,20 @@ const nextConfig = {
     // your project has TypeScript errors.
     ignoreBuildErrors: true,
   },
+  // Development-specific options
+  webpack: (config, { dev, isServer }) => {
+    if (dev && !isServer) {
+      // Improve HMR in development mode
+      config.watchOptions = {
+        ...config.watchOptions,
+        poll: 1000, // Check for changes every second
+        aggregateTimeout: 300, // Delay before rebuilding
+        ignored: ['**/node_modules', '**/.git', '**/dist'],
+      };
+    }
+    return config;
+  },
   // Next.js 13+ doesn't require swcMinify option
 };
 
-module.exports = nextConfig; 
+module.exports = nextConfig;
