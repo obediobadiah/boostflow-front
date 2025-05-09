@@ -5,6 +5,7 @@ import { Provider } from 'react-redux';
 import { store } from '@/redux/store';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { Toaster } from 'sonner';
 
 interface ProvidersProps {
   children: ReactNode;
@@ -37,6 +38,7 @@ export function Providers({ children }: ProvidersProps) {
         pauseOnHover
         theme="light"
       />
+      <Toaster position="top-right" />
     </Provider>
   );
 } 

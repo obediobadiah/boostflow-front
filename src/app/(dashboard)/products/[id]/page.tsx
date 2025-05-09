@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { FiArrowLeft, FiEdit, FiTrash2, FiDollarSign, FiPackage, FiTag, FiCalendar, FiBarChart2, FiToggleLeft, FiToggleRight, FiShare2, FiEye, FiUser, FiCopy as FiDuplicate } from 'react-icons/fi';
 import { FaFacebookF, FaInstagram, FaTwitter, FaTiktok, FaYoutube, FaLinkedinIn, FaPinterestP } from 'react-icons/fa';
 import { Button } from '@/components/ui/button';
-import { productService, promotionService } from '@/lib/api';
+import { productService, promotionService, authService } from '@/lib/api';
 import { formatDate } from '@/lib/utils';
 import { toast } from 'react-hot-toast';
 import {
@@ -29,10 +29,11 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { dashboardService } from '@/lib/api/dashboard.service';
 
-export default function ProductDetailPage({ params }: { params: { id: string } }) {
-  // Safely access the id parameter
-  const productId = params?.id;
+export default function ProductDetailPage({ params }: { params: { id: string } | Promise<{ id: string }> }) {
+  // Properly unwrap params with React.use(), using type guard to check if it's a Promise
+  const productId = (!('then' in params)) ? params.id : React.use(params).id;
 
   const router = useRouter();
   const [product, setProduct] = useState<any>(null);
@@ -67,40 +68,18 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
   useEffect(() => {
     async function fetchUserInfo() {
       try {
-        // Get authentication token
-        const token = localStorage.getItem('token');
-
-        if (!token) {
-          setIsPromoter(false);
-          setIsAdmin(false);
-          return;
-        }
-
-        // Fetch current user data with auth token
-        const response = await fetch('/api/auth/me', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-
-        if (!response.ok) {
-          if (response.status === 401) {
-            localStorage.removeItem('token');
-          }
-          setIsPromoter(false);
-          setIsAdmin(false);
-          return;
-        }
-
-        const userData = await response.json();
-        setCurrentUser(userData);
+        // Get user data using authService
+        const userData = await authService.getCurrentUser();
+        setCurrentUser(userData.user || userData);
 
         // Set user roles based on response
-        const userIsAdmin = userData.role === 'admin';
+        const userIsAdmin = (userData.user?.role || userData.role) === 'admin';
         setIsAdmin(userIsAdmin);
-        setIsPromoter(userData.role === 'promoter' || userIsAdmin);
+        setIsPromoter((userData.user?.role || userData.role) === 'promoter' || userIsAdmin);
       } catch (err) {
         console.error('Error fetching user info:', err);
+        setIsPromoter(false);
+        setIsAdmin(false);
       }
     }
 
@@ -124,6 +103,14 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
           setIsOwner(isDirectOwner || isCreator || hasAdminAccess);
         } else {
           setIsOwner(false);
+        }
+        
+        // Track product view
+        try {
+          await dashboardService.trackProductView(parseInt(productId));
+        } catch (viewError) {
+          console.error('Failed to track product view:', viewError);
+          // Don't show error to user as this is a background operation
         }
       } catch (err) {
         console.error('Error fetching product:', err);
@@ -231,7 +218,6 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
         platforms: selectedPlatforms
       });
 
-      console.log('Promotion created successfully:', response);
       toast.success('Product promoted successfully!');
       
       // Don't close the modal, let the user manually copy the image

@@ -90,10 +90,9 @@ export default function UsersPage() {
     try {
       setLoading(true);
       const data = await userService.getAllUsers();
-      console.log('Users data:', data);
       setUsers(data.users || data || []);
-    } catch (err) {
-      console.error('Error fetching users:', err);
+    } catch (error) {
+      console.error('Error fetching users:', error);
       toast.error('Failed to load users');
     } finally {
       setLoading(false);

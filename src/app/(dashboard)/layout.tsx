@@ -7,6 +7,7 @@ import { getCurrentUser } from '@/redux/slices/authSlice';
 import Header from '@/components/layout/header';
 import Sidebar from '@/components/layout/sidebar';
 import MobileSidebar from '@/components/layout/mobile-sidebar';
+import Cookies from 'js-cookie';
 
 export default function DashboardLayout({
   children,
@@ -23,22 +24,15 @@ export default function DashboardLayout({
     if (!isLoading) {
       // Always try to fetch user data if we're authenticated but don't have user data
       if (isAuthenticated && !user) {
-        console.log('Dashboard: Authenticated but no user data, fetching user');
         dispatch(getCurrentUser());
       }
       // Try to fetch if we have a token but aren't authenticated yet
       else if (!isAuthenticated) {
-        // Check if token exists before dispatching action
-        const hasToken = 
-          typeof window !== 'undefined' && 
-          (localStorage.getItem('token') || document.cookie.includes('auth_token='));
-        
+        const hasToken = localStorage.getItem('token') || Cookies.get('auth_token');
         if (hasToken) {
-          console.log('Dashboard: Found token but not authenticated, fetching user');
           dispatch(getCurrentUser());
         } else {
           // If no token, redirect to login without making API call
-          console.log('Dashboard: No token found, redirecting to login');
           router.push('/login');
         }
       }

@@ -109,7 +109,6 @@ export default function ProductsPage() {
 
         // Then fetch products
         const response = await productService.getAllProducts();
-        console.log('Products fetched:', response);
         setProducts(response.products || []);
         setError(null);
       } catch (err: any) {
@@ -247,10 +246,10 @@ export default function ProductsPage() {
 
           <Tabs defaultValue="all" className="w-full">
             <div className="px-4 pt-2">
-              <TabsList className="grid w-full md:w-80 grid-cols-3">
-                <TabsTrigger value="all">All Products</TabsTrigger>
-                <TabsTrigger value="active">Active</TabsTrigger>
-                <TabsTrigger value="inactive">Deactivated</TabsTrigger>
+              <TabsList>
+                <TabsTrigger value="all">All Products ( {filteredProducts.length || 0} ) </TabsTrigger>
+                <TabsTrigger value="active">Active ( {filteredProducts.filter(product => product.active).length || 0} ) </TabsTrigger>
+                <TabsTrigger value="inactive">Deactivated ( {filteredProducts.filter(product => !product.active).length || 0} ) </TabsTrigger>
               </TabsList>
             </div>
 
@@ -276,7 +275,7 @@ export default function ProductsPage() {
                     <div className="text-center py-8">
                       <p className="text-gray-500">No products found</p>
                       <Link href="/products/new" className="text-orange-600 hover:underline mt-2 inline-block">
-                        Create your first product
+                        Create your first product 
                       </Link>
                     </div>
                   ) : (

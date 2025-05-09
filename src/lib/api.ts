@@ -21,14 +21,6 @@ api.interceptors.request.use(
       // Use the token that exists
       const token = localStorageToken || cookieToken;
       
-      // Log token status for debugging
-      console.log('API Request:', { 
-        url: config.url,
-        hasLocalStorageToken: !!localStorageToken, 
-        hasCookieToken: !!cookieToken,
-        tokenLength: token ? token.length : 0
-      });
-      
       // If token exists, use it
       if (token) {
         // Make sure Authorization header is properly formatted with 'Bearer ' prefix
@@ -36,12 +28,10 @@ api.interceptors.request.use(
         
         // If token is missing from cookies, restore it (sync tokens)
         if (!cookieToken && localStorageToken) {
-          console.log('Restoring missing cookie token from localStorage');
           Cookies.set('auth_token', localStorageToken, { path: '/', expires: 1 });
         } 
         // If token is in cookie but not localStorage, restore localStorage from cookie
         else if (cookieToken && !localStorageToken) {
-          console.log('Restoring missing localStorage token from cookie');
           localStorage.setItem('token', cookieToken);
         }
       }
@@ -61,13 +51,7 @@ api.interceptors.request.use(
 // Response interceptor for handling expired tokens
 api.interceptors.response.use(
   (response) => {
-    // Log successful authentication responses for debugging
-    if (response.config.url?.includes('/auth/')) {
-      console.log(`✅ Auth success: ${response.config.url}`, { 
-        status: response.status,
-        data: response.data 
-      });
-    }
+    // Return the response directly without any logging
     return response;
   },
   (error) => {
@@ -80,10 +64,8 @@ api.interceptors.response.use(
 
     // If we get a 401 Unauthorized error, clear token
     if (error.response && error.response.status === 401) {
-      console.log(`🚫 Authentication failed (401) for ${error.config?.url}: ${error.response?.data?.message || 'Unauthorized'}`);
       // Clear token from localStorage
       if (typeof window !== 'undefined') {
-        console.log('Clearing tokens from localStorage and cookies due to 401');
         localStorage.removeItem('token');
         Cookies.remove('auth_token', { path: '/' });
         
@@ -123,22 +105,15 @@ export const authService = {
     if (typeof window !== 'undefined') {
       const token = localStorage.getItem('token') || Cookies.get('auth_token');
       
-      // Enhanced logging for debugging auth issues
-      console.log('getCurrentUser check:', { 
-        localStorageToken: token ? token.substring(0, 10) + '...' : null,
-        cookieToken: Cookies.get('auth_token') ? 'present' : 'missing'
-      });
-      
       if (!token) {
-        console.log('getCurrentUser: No auth token found, skipping request');
         // Return a rejected promise to trigger the rejected case in redux
         return Promise.reject({ response: { status: 401, data: { message: 'No auth token' } } });
       }
     }
     
     try {
+      // Access the endpoint with the correct URL structure
       const response = await api.get('/auth/me');
-      console.log('getCurrentUser success:', response.data);
       return response.data;
     } catch (error) {
       console.error('getCurrentUser error:', error);
@@ -148,8 +123,6 @@ export const authService = {
   // Process token from social auth redirect
   processSocialAuthCallback: (token: string) => {
     if (typeof window !== 'undefined') {
-      console.log('Processing social auth callback with token', token.substring(0, 10) + '...');
-      
       try {
         // First clean up any existing tokens to avoid conflicts
         localStorage.removeItem('token');
@@ -157,26 +130,12 @@ export const authService = {
         
         // Store token in localStorage
         localStorage.setItem('token', token);
-        console.log('Token saved to localStorage');
         
         // Also set it in cookies for the middleware
         Cookies.set('auth_token', token, { path: '/', expires: 1 });
-        console.log('Token saved to cookies with path=/');
-        
-        // Verify tokens were set correctly
-        const localStorageToken = localStorage.getItem('token');
-        const cookieToken = Cookies.get('auth_token');
-        
-        console.log('Token verification:', {
-          localStorageSet: !!localStorageToken,
-          cookieSet: !!cookieToken,
-          match: localStorageToken === cookieToken,
-          lengthMatch: localStorageToken?.length === token.length
-        });
         
         // Set auth header for future requests
         api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        console.log('Auth header set for future requests');
       } catch (error) {
         console.error('Error saving auth tokens:', error);
       }
@@ -233,14 +192,60 @@ export const productService = {
   },
 
   getAllProductsStatistique: async (p0: { params: { page: number; limit: number; }; }) => {
-    const response = await api.get('/products');
-    return response.data;
+    try {
+      const response = await api.get('/products', { 
+        params: p0.params 
+      });
+      
+      // If the response already has the expected structure, return it directly
+      if (response?.data?.data && Array.isArray(response.data.data)) {
+        return response.data;
+      }
+      
+      // Get page and limit from params or use defaults
+      const page = p0?.params?.page || 1;
+      const limit = p0?.params?.limit || 10;
+      
+      // Safely handle the response data
+      const responseData = response?.data || [];
+      
+      // Handle array responses
+      if (Array.isArray(responseData)) {
+        return {
+          data: responseData,
+          total: responseData.length,
+          page: page,
+          limit: limit,
+          totalPages: Math.ceil(responseData.length / limit) || 1
+        };
+      }
+      
+      // Handle object responses with products property
+      const products = responseData?.products || [];
+      
+      return {
+        data: Array.isArray(products) ? products : [],
+        total: Array.isArray(products) ? products.length : 0,
+        page: page,
+        limit: limit,
+        totalPages: Math.ceil((Array.isArray(products) ? products.length : 0) / limit) || 1
+      };
+    } catch (error) {
+      console.error('Error fetching products statistics:', error);
+      // Return empty structure to avoid crashes
+      return {
+        data: [],
+        total: 0,
+        page: p0?.params?.page || 1,
+        limit: p0?.params?.limit || 10,
+        totalPages: 0
+      };
+    }
   },
+  
   getProductById: async (id: string) => {
     try {
-      console.log(`Fetching product with ID: ${id}`);
       const response = await api.get(`/products/${id}`);
-      console.log('Product fetch response:', response.data);
       return response.data;
     } catch (error: any) {
       console.error('Error fetching product:', {
@@ -261,17 +266,6 @@ export const productService = {
         parseFloat(productData.commissionRate) : productData.commissionRate
     };
     
-    // Log what we're sending to the API
-    console.log('Sending product data to API:', {
-      name: data.name,
-      description: data.description ? data.description.substring(0, 30) + '...' : '',
-      price: data.price,
-      commissionRate: data.commissionRate,
-      imagesCount: Array.isArray(data.images) ? data.images.length : 'not an array',
-      imagesSample: Array.isArray(data.images) && data.images.length > 0 ? 
-        data.images[0].substring(0, 30) + '...' : 'no images'
-    });
-    
     try {
       const response = await api.post('/products', data);
       return response.data;
@@ -290,18 +284,11 @@ export const productService = {
   },
   duplicateProduct: async (id: string) => {
     try {
-      console.log(`Attempting to duplicate product with ID: ${id}`);
-      
       // Get the original product first to check if it exists
       const product = await api.get(`/products/${id}`);
-      console.log('Original product data:', {
-        id: product.data.id || product.data.product?.id,
-        name: product.data.name || product.data.product?.name
-      });
       
       // Then attempt to duplicate it
       const response = await api.post(`/products/${id}/duplicate`);
-      console.log('Duplicate product response:', response.data);
       return response.data;
     } catch (error: any) {
       console.error('Error duplicating product:', {
@@ -333,8 +320,55 @@ export const promotionService = {
   },
 
   getMyPromotionsStatistics: async (p0: { params: { page: number; limit: number; }; }) => {
-    const response = await api.get('/products');
-    return response.data;
+    try {
+      const response = await api.get('/promotions', { 
+        params: p0.params 
+      });
+      
+      // If the response already has the expected structure, return it directly
+      if (response?.data?.data && Array.isArray(response.data.data)) {
+        return response.data;
+      }
+      
+      // Get page and limit from params or use defaults
+      const page = p0?.params?.page || 1;
+      const limit = p0?.params?.limit || 10;
+      
+      // Safely handle the response data
+      const responseData = response?.data || [];
+      
+      // Handle array responses
+      if (Array.isArray(responseData)) {
+        return {
+          data: responseData,
+          total: responseData.length,
+          page: page,
+          limit: limit,
+          totalPages: Math.ceil(responseData.length / limit) || 1
+        };
+      }
+      
+      // Handle object responses with promotions property
+      const promotions = responseData?.promotions || [];
+      
+      return {
+        data: Array.isArray(promotions) ? promotions : [],
+        total: Array.isArray(promotions) ? promotions.length : 0,
+        page: page,
+        limit: limit,
+        totalPages: Math.ceil((Array.isArray(promotions) ? promotions.length : 0) / limit) || 1
+      };
+    } catch (error) {
+      console.error('Error fetching promotions statistics:', error);
+      // Return empty structure to avoid crashes
+      return {
+        data: [],
+        total: 0,
+        page: p0?.params?.page || 1,
+        limit: p0?.params?.limit || 10,
+        totalPages: 0
+      };
+    }
   },
   getPromotionById: async (id: string) => {
     const response = await api.get(`/promotions/${id}`);
