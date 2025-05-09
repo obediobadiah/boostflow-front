@@ -8,9 +8,9 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import api, { productService, authService } from '@/lib/api';
 
-export default function EditProductPage({ params }: { params: { id: string } }) {
-  // Safe access to the id parameter
-  const id = params?.id;
+export default function EditProductPage({ params }: { params: { id: string } | Promise<{ id: string }> }) {
+  // Properly unwrap params with React.use(), using type guard to check if it's a Promise
+  const id = (!('then' in params)) ? params.id : React.use(params).id;
   
   const router = useRouter();
   const [loading, setLoading] = useState(true);

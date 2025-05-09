@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import NewPromotion from '@/components/promotion/NewPromotion';
 import { Button } from '@/components/ui/button';
 import { promotionService } from '@/lib/api';
@@ -104,34 +104,24 @@ export default function PromotionsPage() {
     }
   }, [promotions, searchQuery, statusFilter, sortBy, categoryFilter]);
 
-  const fetchPromotions = async () => {
+  const fetchPromotions = useCallback(async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      console.log('Fetching promotions...');
-      
-      // Get promotions using the service which uses axios
       const data = await promotionService.getMyPromotions();
-      console.log('Fetched promotions data:', data);
       
-      // Set promotions and isAdmin flag from the data
       if (data && data.promotions) {
         setPromotions(data.promotions);
-        setFilteredPromotions(data.promotions);
         setIsAdmin(data.isAdmin || false);
-        console.log(`Found ${data.promotions.length} promotions, isAdmin: ${data.isAdmin}`);
       } else {
-        console.log('No promotions found in response');
         setPromotions([]);
-        setFilteredPromotions([]);
       }
     } catch (error) {
-      console.error('Failed to fetch promotions:', error);
-      setPromotions([]);
-      setFilteredPromotions([]);
+      console.error('Error fetching promotions:', error);
+      toast.error('Failed to load promotions');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const applyFilters = () => {
     let filtered = [...promotions];

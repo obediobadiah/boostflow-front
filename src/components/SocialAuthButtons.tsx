@@ -12,11 +12,10 @@ export function SocialAuthButtons() {
     setIsLoading(provider);
     try {
       // Get API URL from env or use default
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api';
       
       // Prepare redirect URL
       const redirectUrl = `${apiUrl}/auth/${provider}`;
-      console.log(`Redirecting to ${provider} authentication:`, redirectUrl);
       
       // Redirect to the social auth endpoint
       window.location.href = redirectUrl;

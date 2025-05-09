@@ -36,8 +36,8 @@ export function Pagination({
   };
 
   return (
-    <div className="flex items-center justify-between py-3">
-      <div className="flex-1 text-sm text-gray-700">
+    <div className="flex items-center justify-between pt-2 pb-1">
+      <div className="flex-1 text-xs text-gray-500">
         {totalItems !== undefined && itemsPerPage !== undefined && (
           <p>
             Showing <span className="font-medium">{Math.min((currentPage - 1) * itemsPerPage + 1, totalItems)}</span>
@@ -49,41 +49,41 @@ export function Pagination({
         )}
       </div>
       
-      <div className="flex items-center space-x-2">
+      <div className="flex items-center space-x-1">
         <button
           onClick={() => onPageChange(1)}
           disabled={currentPage === 1}
-          className={`inline-flex items-center justify-center p-2 rounded-md ${
+          className={`inline-flex items-center justify-center p-1 rounded-md ${
             currentPage === 1 
-              ? 'text-gray-400 cursor-not-allowed' 
-              : 'text-gray-700 hover:bg-gray-100'
+              ? 'text-gray-300 cursor-not-allowed' 
+              : 'text-gray-600 hover:bg-gray-100'
           }`}
           aria-label="First page"
         >
-          <FiChevronsLeft className="h-4 w-4" />
+          <FiChevronsLeft className="h-3 w-3" />
         </button>
         
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className={`inline-flex items-center justify-center p-2 rounded-md ${
+          className={`inline-flex items-center justify-center p-1 rounded-md ${
             currentPage === 1 
-              ? 'text-gray-400 cursor-not-allowed' 
-              : 'text-gray-700 hover:bg-gray-100'
+              ? 'text-gray-300 cursor-not-allowed' 
+              : 'text-gray-600 hover:bg-gray-100'
           }`}
           aria-label="Previous page"
         >
-          <FiChevronLeft className="h-4 w-4" />
+          <FiChevronLeft className="h-3 w-3" />
         </button>
         
         {getPageNumbers().map(page => (
           <button
             key={page}
             onClick={() => onPageChange(page)}
-            className={`inline-flex items-center justify-center w-8 h-8 rounded-md ${
+            className={`inline-flex items-center justify-center w-6 h-6 text-xs rounded-md ${
               currentPage === page
-                ? 'bg-indigo-600 text-white'
-                : 'text-gray-700 hover:bg-gray-100'
+                ? 'bg-orange-600 text-white'
+                : 'text-gray-600 hover:bg-gray-100'
             }`}
             aria-label={`Page ${page}`}
             aria-current={currentPage === page ? 'page' : undefined}
@@ -95,27 +95,27 @@ export function Pagination({
         <button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className={`inline-flex items-center justify-center p-2 rounded-md ${
+          className={`inline-flex items-center justify-center p-1 rounded-md ${
             currentPage === totalPages 
-              ? 'text-gray-400 cursor-not-allowed' 
-              : 'text-gray-700 hover:bg-gray-100'
+              ? 'text-gray-300 cursor-not-allowed' 
+              : 'text-gray-600 hover:bg-gray-100'
           }`}
           aria-label="Next page"
         >
-          <FiChevronRight className="h-4 w-4" />
+          <FiChevronRight className="h-3 w-3" />
         </button>
         
         <button
           onClick={() => onPageChange(totalPages)}
           disabled={currentPage === totalPages}
-          className={`inline-flex items-center justify-center p-2 rounded-md ${
+          className={`inline-flex items-center justify-center p-1 rounded-md ${
             currentPage === totalPages 
-              ? 'text-gray-400 cursor-not-allowed' 
-              : 'text-gray-700 hover:bg-gray-100'
+              ? 'text-gray-300 cursor-not-allowed' 
+              : 'text-gray-600 hover:bg-gray-100'
           }`}
           aria-label="Last page"
         >
-          <FiChevronsRight className="h-4 w-4" />
+          <FiChevronsRight className="h-3 w-3" />
         </button>
       </div>
     </div>

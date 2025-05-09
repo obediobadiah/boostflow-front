@@ -13,62 +13,48 @@ export default function AuthCallback() {
   const dispatch = useAppDispatch();
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [errorMessage, setErrorMessage] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const token = searchParams.get('token');
-    const error = searchParams.get('error');
-    
-    console.log('Auth callback initiated:', { token: !!token, error });
-    
-    // Handle error from OAuth provider
-    if (error) {
-      console.error('OAuth error:', error);
-      setStatus('error');
-      setErrorMessage(error);
-      return;
-    }
-    
-    if (!token) {
-      console.error('No token received');
-      setStatus('error');
-      setErrorMessage('No authentication token received. Please try again.');
-      return;
-    }
-    
-    const processAuth = async () => {
+    async function processAuth() {
       try {
-        console.log('Processing social auth with token:', token.substring(0, 10) + '...');
+        setIsLoading(true);
         
-        // Process the token directly without dispatching
-        const authResult = authService.processSocialAuthCallback(token);
-        console.log('Token saved to localStorage and cookies');
+        // Get token from URL params
+        const searchParams = new URLSearchParams(window.location.search);
+        const token = searchParams.get('token');
+        const error = searchParams.get('error');
         
-        // Add a small delay to ensure token is properly set before fetching user data
-        await new Promise(resolve => setTimeout(resolve, 300));
+        // Handle error case
+        if (error) {
+          setErrorMessage(error);
+          return;
+        }
         
-        // Now get the user data
-        console.log('Dispatching getCurrentUser()');
-        const result = await dispatch(getCurrentUser()).unwrap();
-        console.log('User data retrieved successfully:', result);
+        // Handle missing token
+        if (!token) {
+          setErrorMessage('No authentication token received');
+          return;
+        }
         
-        setStatus('success');
+        // Process the token
+        await authService.processSocialAuthCallback(token);
         
-        // Redirect after short delay to show success message
-        setTimeout(() => {
-          console.log('Redirecting to home');
-          // Make sure we're redirecting to the right place
-          router.push('/home');
-        }, 1000);
-      } catch (error: any) {
-        console.error('Error during social authentication:', error);
-        console.error('Full error details:', JSON.stringify(error, null, 2));
-        setStatus('error');
-        setErrorMessage('Failed to complete authentication. Please try again.');
+        // Get user data
+        await dispatch(getCurrentUser()).unwrap();
+        
+        // Redirect to home page
+        router.push('/home');
+      } catch (err) {
+        console.error('Auth callback error:', err);
+        setErrorMessage('Authentication failed. Please try again.');
+      } finally {
+        setIsLoading(false);
       }
-    };
+    }
     
     processAuth();
-  }, [dispatch, router, searchParams]);
+  }, [dispatch, router]);
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50">
