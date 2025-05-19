@@ -494,9 +494,8 @@ export default function HomePage() {
                   formatter={(value: number) => [`${value}`, '']}
                 />
                 <Legend wrapperStyle={{fontSize: '11px'}} />
-                <Area type="monotone" dataKey="clicks" fill="#10b981" stroke="#10b981" fillOpacity={0.2} name="Clicks" />
-                <Area type="monotone" dataKey="conversions" fill="#0ea5e9" stroke="#0ea5e9" fillOpacity={0.2} name="Conversions" />
-                <Area type="monotone" dataKey="earnings" fill="#6366f1" stroke="#6366f1" fillOpacity={0.2} name="Earnings ($)" />
+                <Area type="monotone" dataKey="promotions" fill="#10b981" stroke="#10b981" fillOpacity={0.2} name="Promotions" />
+                <Area type="monotone" dataKey="earnings" fill="#6366f1" stroke="#6366f1" fillOpacity={0.2} name="Est. Earnings ($)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>

@@ -252,7 +252,7 @@ export default function PromotionsPage() {
               <div className="font-semibold mt-1">{promotion.clicks}</div>
             </div>
             <div className="bg-gray-50 p-3 rounded-lg">
-              <div className="text-sm text-gray-500">Earnings</div>
+              <div className="text-sm text-gray-500">Estimated Earnings</div>
               <div className="font-semibold text-green-600 mt-1">${formatEarnings(promotion.earnings)}</div>
             </div>
           </div>

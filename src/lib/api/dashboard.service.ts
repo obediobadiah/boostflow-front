@@ -81,14 +81,16 @@ export interface PromotionStatResponse {
   data: {
     weeklyData: Array<{
       name: string;
-      clicks: number;
-      conversions: number;
+      promotions: number;
       earnings: number;
     }>;
     summary: {
-      totalClicks: number;
-      totalConversions: number;
-      totalEarnings: number;
+      totalPromotions: number;
+      totalEstimatedEarnings: number;
+      prevMonthPromotions: number;
+      prevMonthEarnings: number;
+      promotionsPercentChange: string;
+      earningsPercentChange: string;
     };
   };
 }
