@@ -8,10 +8,15 @@ import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
 
 export function RegisterForm() {
-  const [name, setName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [phone, setPhone] = useState('');
+  const [company, setCompany] = useState('');
+  const [website, setWebsite] = useState('');
+  const [bio, setBio] = useState('');
   const [role, setRole] = useState('business');
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
@@ -33,8 +38,12 @@ export function RegisterForm() {
   const validateForm = () => {
     const errors: { [key: string]: string } = {};
     
-    if (!name.trim()) {
-      errors.name = 'Name is required';
+    if (!firstName.trim()) {
+      errors.firstName = 'First name is required';
+    }
+    
+    if (!lastName.trim()) {
+      errors.lastName = 'Last name is required';
     }
     
     if (!email.trim()) {
@@ -52,6 +61,10 @@ export function RegisterForm() {
     if (password !== confirmPassword) {
       errors.confirmPassword = 'Passwords do not match';
     }
+
+    if (website && !/^https?:\/\/.+/.test(website)) {
+      errors.website = 'Website must be a valid URL';
+    }
     
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -68,7 +81,17 @@ export function RegisterForm() {
     }
     
     try {
-      const resultAction = await dispatch(register({ name, email, password, role }));
+      const resultAction = await dispatch(register({ 
+        firstName,
+        lastName,
+        email,
+        password,
+        phone,
+        company,
+        website,
+        bio,
+        role 
+      }));
       
       if (register.fulfilled.match(resultAction)) {
         setRegistrationSuccess(true);
@@ -83,26 +106,47 @@ export function RegisterForm() {
   return (
     <form className="space-y-8" onSubmit={handleSubmit}>
       <div className="space-y-6">
-        <div className="mt-2">
-          <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-            Full Name
-          </label>
-          <input
-            id="name"
-            name="name"
-            type="text"
-            autoComplete="name"
-            required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 py-3 sm:text-sm text-gray-600"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-          {formErrors.name && (
-            <p className="mt-2 text-sm text-red-600">{formErrors.name}</p>
-          )}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
+              First Name
+            </label>
+            <input
+              id="firstName"
+              name="firstName"
+              type="text"
+              autoComplete="given-name"
+              required
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 py-3 sm:text-sm text-gray-600"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+            />
+            {formErrors.firstName && (
+              <p className="mt-2 text-sm text-red-600">{formErrors.firstName}</p>
+            )}
+          </div>
+
+          <div>
+            <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
+              Last Name
+            </label>
+            <input
+              id="lastName"
+              name="lastName"
+              type="text"
+              autoComplete="family-name"
+              required
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 py-3 sm:text-sm text-gray-600"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+            />
+            {formErrors.lastName && (
+              <p className="mt-2 text-sm text-red-600">{formErrors.lastName}</p>
+            )}
+          </div>
         </div>
         
-        <div className="mt-4">
+        <div>
           <label htmlFor="email-address" className="block text-sm font-medium text-gray-700 mb-2">
             Email address
           </label>
@@ -120,46 +164,110 @@ export function RegisterForm() {
             <p className="mt-2 text-sm text-red-600">{formErrors.email}</p>
           )}
         </div>
-        
-        <div className="mt-4">
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-            Password
+
+        <div>
+          <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+            Phone Number
           </label>
           <input
-            id="password"
-            name="password"
-            type="password"
-            autoComplete="new-password"
-            required
+            id="phone"
+            name="phone"
+            type="tel"
+            autoComplete="tel"
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 py-3 sm:text-sm text-gray-600"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
           />
-          {formErrors.password && (
-            <p className="mt-2 text-sm text-red-600">{formErrors.password}</p>
-          )}
         </div>
-        
-        <div className="mt-4">
-          <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700 mb-2">
-            Confirm Password
+
+        <div>
+          <label htmlFor="company" className="block text-sm font-medium text-gray-700 mb-2">
+            Company
           </label>
           <input
-            id="confirm-password"
-            name="confirmPassword"
-            type="password"
-            autoComplete="new-password"
-            required
+            id="company"
+            name="company"
+            type="text"
+            autoComplete="organization"
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 py-3 sm:text-sm text-gray-600"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
+            value={company}
+            onChange={(e) => setCompany(e.target.value)}
           />
-          {formErrors.confirmPassword && (
-            <p className="mt-2 text-sm text-red-600">{formErrors.confirmPassword}</p>
+        </div>
+
+        <div>
+          <label htmlFor="website" className="block text-sm font-medium text-gray-700 mb-2">
+            Website
+          </label>
+          <input
+            id="website"
+            name="website"
+            type="url"
+            autoComplete="url"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 py-3 sm:text-sm text-gray-600"
+            value={website}
+            onChange={(e) => setWebsite(e.target.value)}
+          />
+          {formErrors.website && (
+            <p className="mt-2 text-sm text-red-600">{formErrors.website}</p>
           )}
         </div>
+
+        <div>
+          <label htmlFor="bio" className="block text-sm font-medium text-gray-700 mb-2">
+            Bio
+          </label>
+          <textarea
+            id="bio"
+            name="bio"
+            rows={3}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 py-3 sm:text-sm text-gray-600"
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+          />
+        </div>
         
-        <div className="mt-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+              Password
+            </label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              autoComplete="new-password"
+              required
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 py-3 sm:text-sm text-gray-600"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            {formErrors.password && (
+              <p className="mt-2 text-sm text-red-600">{formErrors.password}</p>
+            )}
+          </div>
+          
+          <div>
+            <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700 mb-2">
+              Confirm Password
+            </label>
+            <input
+              id="confirm-password"
+              name="confirmPassword"
+              type="password"
+              autoComplete="new-password"
+              required
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 py-3 sm:text-sm text-gray-600"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+            {formErrors.confirmPassword && (
+              <p className="mt-2 text-sm text-red-600">{formErrors.confirmPassword}</p>
+            )}
+          </div>
+        </div>
+        
+        <div>
           <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-2">
             I want to
           </label>

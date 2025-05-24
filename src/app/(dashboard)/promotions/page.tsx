@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, ReactNode } from 'react';
 import NewPromotion from '@/components/promotion/NewPromotion';
 import { Button } from '@/components/ui/button';
 import { promotionService } from '@/lib/api';
@@ -55,12 +55,14 @@ interface Promotion {
     price: number;
     category?: string;
     owner: {
-      name: string;
+      firstName: string;
+      lastName: string;
       email: string;
     };
   };
   promoter: {
-    name: string;
+    firstName: string;
+    lastName: string;
     email: string;
     role: string;
   };
@@ -233,7 +235,7 @@ export default function PromotionsPage() {
             <div>
               <CardTitle className="text-lg font-bold">{promotion.product.name}</CardTitle>
               <CardDescription className="text-sm text-gray-500">
-                ${promotion.product.price} • Owner: {promotion.product.owner.name}
+                ${promotion.product.price} • Owner: {promotion.product.owner.firstName} {promotion.product.owner.lastName}
               </CardDescription>
             </div>
             <Badge className={getStatusColor(promotion.status || 'active')}>
@@ -259,7 +261,7 @@ export default function PromotionsPage() {
           
           {isAdmin && (
             <div className="text-xs text-gray-500 mt-2">
-              Promoted by: {promotion.promoter.name} ({promotion.promoter.role})
+              Promoted by: {promotion.promoter.firstName} {promotion.promoter.lastName} ({promotion.promoter.role})
             </div>
           )}
         </CardContent>

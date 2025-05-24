@@ -2,6 +2,11 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
+  // Skip middleware for static files
+  if (request.nextUrl.pathname.startsWith('/uploads/')) {
+    return NextResponse.next();
+  }
+
   // Get the pathname of the request
   const path = request.nextUrl.pathname;
   

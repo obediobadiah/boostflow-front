@@ -30,10 +30,8 @@ const generateImageUrl = async (imageData: string): Promise<string> => {
     const data = await response.json();
     console.log('Upload response:', data); // Debug the response
     
-    // Ensure the URL has the correct format
-    const imageUrl = data.url.startsWith('/') ? `${window.location.origin}${data.url}` : data.url;
-    console.log('Generated image URL:', imageUrl);
-    return imageUrl;
+    // Return the URL as-is without modifying it
+    return data.url;
   } catch (error) {
     console.error('Error uploading image:', error);
     // Fallback to a placeholder image if upload fails
@@ -568,7 +566,7 @@ export default function NewProductPage() {
                 return (
                 <div key={index} className="relative group">
                   <img 
-                    src={url.startsWith('/') ? `${window.location.origin}${url}` : url} 
+                    src={url} 
                     alt={`Product image ${index + 1}`} 
                     className="w-full h-24 object-cover rounded border"
                     onError={(e) => {

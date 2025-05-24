@@ -5,8 +5,13 @@ import Cookies from 'js-cookie';
 // Define user type
 interface User {
   id: number;
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
+  phone?: string;
+  company?: string;
+  website?: string;
+  bio?: string;
   role: string;
 }
 
@@ -82,9 +87,29 @@ export const login = createAsyncThunk(
 
 export const register = createAsyncThunk(
   'auth/register',
-  async ({ name, email, password, role }: { name: string; email: string; password: string; role?: string }, { rejectWithValue }) => {
+  async ({ 
+    firstName, 
+    lastName, 
+    email, 
+    password, 
+    phone, 
+    company, 
+    website, 
+    bio, 
+    role 
+  }: { 
+    firstName: string; 
+    lastName: string; 
+    email: string; 
+    password: string; 
+    phone?: string; 
+    company?: string; 
+    website?: string; 
+    bio?: string; 
+    role?: string; 
+  }, { rejectWithValue }) => {
     try {
-      const data = await authService.register(name, email, password, role);
+      const data = await authService.register(firstName, lastName, email, password, phone, company, website, bio, role);
       if (data.token) {
         saveToken(data.token);
       }

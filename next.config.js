@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'standalone',
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api',
   },
@@ -20,6 +21,10 @@ const nextConfig = {
         source: '/api/upload',
         destination: '/api/upload',
       },
+      {
+        source: '/uploads/:path*',
+        destination: '/api/uploads/:path*',
+      }
     ];
   },
   reactStrictMode: true,
@@ -45,6 +50,41 @@ const nextConfig = {
       };
     }
     return config;
+  },
+  // Configure static file serving
+  images: {
+    domains: ['localhost'],
+    remotePatterns: [
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '3000',
+        pathname: '/uploads/**',
+      },
+    ],
+  },
+  // Configure static file serving
+  async headers() {
+    return [
+      {
+        source: '/uploads/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        source: '/api/upload/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+    ];
   },
   // Next.js 13+ doesn't require swcMinify option
 };

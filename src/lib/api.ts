@@ -91,8 +91,28 @@ export const authService = {
       throw error;
     }
   },
-  register: async (name: string, email: string, password: string, role: string = 'business') => {
-    const response = await api.post('/auth/register', { name, email, password, role });
+  register: async (
+    firstName: string,
+    lastName: string,
+    email: string,
+    password: string,
+    phone?: string,
+    company?: string,
+    website?: string,
+    bio?: string,
+    role: string = 'business'
+  ) => {
+    const response = await api.post('/auth/register', {
+      firstName,
+      lastName,
+      email,
+      password,
+      phone,
+      company,
+      website,
+      bio,
+      role
+    });
     return response.data;
   },
   logout: () => {

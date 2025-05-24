@@ -234,6 +234,16 @@ class DashboardService {
       };
     }
   }
+
+  async getPromotionStatsByMonth(year: number, month: number): Promise<PromotionStatResponse> {
+    try {
+      const response = await apiClient.get(`/statistics/promotions/month/${year}/${month}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching promotion stats by month:', error);
+      throw error;
+    }
+  }
 }
 
 export const dashboardService = new DashboardService(); 

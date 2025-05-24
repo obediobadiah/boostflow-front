@@ -148,12 +148,6 @@ export default function Sidebar() {
 
   const bottomNavigation: NavigationItem[] = [
     {
-      href: '/settings',
-      icon: <FiSettings />,
-      title: 'Settings',
-      current: pathname.startsWith('/settings'),
-    },
-    {
       href: '/help',
       icon: <FiHelpCircle />,
       title: 'Help & Support',

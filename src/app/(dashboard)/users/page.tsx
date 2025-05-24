@@ -41,6 +41,8 @@ import {
 import { formatDate } from '@/lib/utils';
 
 interface User {
+  lastName: any;
+  firstName: any;
   id: string;
   name: string;
   email: string;
@@ -108,7 +110,8 @@ export default function UsersPage() {
   // Handle search and filtering
   const filteredUsers = users.filter((user) => {
     const matchesSearch = 
-      (user.name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+      (user.firstName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+      (user.lastName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
       (user.email?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
       (user.role?.toLowerCase() || '').includes(searchTerm.toLowerCase());
     
@@ -126,7 +129,7 @@ export default function UsersPage() {
   const handleEditUser = (user: User) => {
     setSelectedUser(user);
     setEditForm({
-      name: user.name || '',
+      name: user.firstName + ' ' + user.lastName || '',
       email: user.email || '',
       role: user.role || '',
       active: user.active !== false, // Default to true if undefined
@@ -444,10 +447,10 @@ export default function UsersPage() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 uppercase font-semibold">
-                          {user.name ? user.name.charAt(0) : '?'}
+                          {user.firstName ? user.firstName.charAt(0) : '?'}
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">{user.name}</div>
+                          <div className="text-sm font-medium text-gray-900">{user.firstName} {user.lastName}</div>
                           <div className="text-xs text-gray-500 md:hidden">{user.email}</div>
                           <div className="sm:hidden mt-1">
                             <span className={`inline-flex items-center px-2 py-0.5 text-xs rounded-full font-medium ${isUserInactive(user) ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>

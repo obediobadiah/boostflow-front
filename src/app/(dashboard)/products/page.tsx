@@ -304,18 +304,28 @@ export default function ProductsPage() {
                 </TabsContent>
 
                 <TabsContent value="inactive" className="p-4">
-                  {currentUser?.role !== 'admin' && currentUser?.role !== 'business' ? (
+                  {filteredProducts.filter(product => {
+                    // Admin can see all inactive products
+                    if (currentUser?.role === 'admin') return !product.active;
+                    // Non-admin users can only see their own inactive products
+                    return !product.active && product.ownerId === currentUser?.id;
+                  }).length === 0 ? (
                     <div className="text-center py-8">
-                      <p className="text-gray-500">Only admin users and product owners can view deactivated products</p>
-                    </div>
-                  ) : filteredProducts.filter(product => !product.active).length === 0 ? (
-                    <div className="text-center py-8">
-                      <p className="text-gray-500">No deactivated products found</p>
+                      <p className="text-gray-500">
+                        {currentUser?.role === 'admin' 
+                          ? 'No deactivated products found'
+                          : 'No deactivated products found in your account'}
+                      </p>
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                       {filteredProducts
-                        .filter(product => !product.active)
+                        .filter(product => {
+                          // Admin can see all inactive products
+                          if (currentUser?.role === 'admin') return !product.active;
+                          // Non-admin users can only see their own inactive products
+                          return !product.active && product.ownerId === currentUser?.id;
+                        })
                         .map(product => (
                           <ProductCard key={product.id} product={product} />
                         ))}

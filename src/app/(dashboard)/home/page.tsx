@@ -382,7 +382,7 @@ export default function HomePage() {
     <main className="flex-1 p-3 lg:p-6">
       <div className="mb-5">
         <h1 className="text-xl font-bold text-gray-900">Home Dashboard</h1>
-        <p className="text-sm text-gray-600">Welcome back, {user?.name}! Here's how your promotions are performing</p>
+        <p className="text-sm text-gray-600">Welcome back, {user?.firstName} {user?.lastName}! Here's how your promotions are performing</p>
       </div>
 
       {/* Stats Grid - Shown to all users */}

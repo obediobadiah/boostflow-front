@@ -57,7 +57,7 @@ export default function DebugAuthPage() {
             {user ? (
               <div>
                 <p><span className="font-medium">ID:</span> {user.id}</p>
-                <p><span className="font-medium">Name:</span> {user.name}</p>
+                <p><span className="font-medium">Name:</span> {user.firstName} {user.lastName}</p>
                 <p><span className="font-medium">Email:</span> {user.email}</p>
                 <p><span className="font-medium">Role:</span> <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-semibold">{user.role}</span></p>
                 <pre className="mt-4 bg-gray-100 p-3 rounded text-xs overflow-auto">{JSON.stringify(user, null, 2)}</pre>
