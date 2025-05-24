@@ -1,3 +1,5 @@
+import axios from 'axios';
+
 // Types
 export interface PromotionStats {
   id: number;
@@ -27,75 +29,42 @@ export interface PaginatedResponse<T> {
   totalPages: number;
 }
 
+export interface DashboardData {
+  user: any;
+  stats: {
+    products?: any;
+    promotions?: any;
+  };
+  recentProducts?: any;
+  recentPromotions?: any;
+}
+
+// Add missing interface definitions
 export interface PromotionAggregateStats {
   totalPromotions: number;
-  clicksGenerated: number;
+  clicksGenerated?: number;
   earnings: number;
   conversions: number;
-  change: {
-    promotions: string;
-    clicks: string;
-    earnings: string;
-    conversions: string;
+  change?: {
+    promotions?: string;
+    earnings?: string;
+    conversions?: string;
   };
 }
 
 export interface MonthlyProductStats {
   totalProducts: number;
-  totalViews: number;
-  weeklyViews: {
+  totalViews?: number;
+  weeklyViews?: Array<{
     week: string;
     count: number;
-  }[];
-  estimatedRevenue: number;
-  change: {
+  }>;
+  estimatedRevenue?: number;
+  change?: {
     products: string;
     views: string;
   };
 }
-
-export interface ProductStatResponse {
-  success: boolean;
-  data: {
-    weeklyData: Array<{
-      name: string;
-      views: number;
-      clicks: number;
-      revenue: number;
-      productsCreated: number;
-    }>;
-    summary: {
-      totalViews: number;
-      totalNewProducts: number;
-      prevMonthViews: number;
-      prevMonthProducts: number;
-      viewsPercentChange: string;
-      productsPercentChange: string;
-      estimatedRevenue: number;
-    };
-  };
-}
-
-export interface PromotionStatResponse {
-  success: boolean;
-  data: {
-    weeklyData: Array<{
-      name: string;
-      promotions: number;
-      earnings: number;
-    }>;
-    summary: {
-      totalPromotions: number;
-      totalEstimatedEarnings: number;
-      prevMonthPromotions: number;
-      prevMonthEarnings: number;
-      promotionsPercentChange: string;
-      earningsPercentChange: string;
-    };
-  };
-}
-
-import axios from 'axios';
 
 // Create API client
 const apiClient = axios.create({
@@ -127,121 +96,66 @@ apiClient.interceptors.request.use(
 );
 
 class DashboardService {
-  // Get product statistics (summary stats only)
-  async getProductStatistics(): Promise<{
-    totalProducts: number;
-    change: string;
-  }> {
-    const response = await apiClient.get('dashboard/statistics/products');
+  // Add the missing method implementations
+  async getProductStatistics(): Promise<{totalProducts: number, change: string}> {
+    const response = await apiClient.get('/api/dashboard/statistics/products');
     return response.data;
   }
-
-  // Get promotion statistics (summary stats only)
+  
   async getPromotionStatistics(): Promise<PromotionAggregateStats> {
-    const response = await apiClient.get('dashboard/statistics/promotions');
+    const response = await apiClient.get('/api/dashboard/statistics/promotions');
     return response.data;
   }
-
-  // Fetch active products with pagination
+  
   async getActiveProducts(page = 1, limit = 5): Promise<PaginatedResponse<ProductStats>> {
-    const response = await apiClient.get('dashboard/products/active', {
+    const response = await apiClient.get('/api/dashboard/products/active', {
       params: { page, limit }
     });
     return response.data;
   }
-
-  // Fetch active promotions with pagination
+  
   async getActivePromotions(page = 1, limit = 5): Promise<PaginatedResponse<PromotionStats>> {
-    const response = await apiClient.get('dashboard/promotions/active', {
+    const response = await apiClient.get('/api/dashboard/promotions/active', {
       params: { page, limit }
     });
     return response.data;
   }
+  
+  // Get dashboard overview data
+  async getDashboardData(): Promise<DashboardData> {
+    const response = await apiClient.get('/api/dashboard');
+    return response.data;
+  }
 
-  // Add function to refresh the auth token if needed
+  // Track a product view
+  async trackProductView(productId: number): Promise<void> {
+    await apiClient.post('/api/dashboard/products/track-view', { productId });
+  }
+
+  // Get monthly product stats
+  async getMonthlyProductStats(year: number, month: number) {
+    const response = await apiClient.get(`/api/dashboard/products/stats/${year}/${month}`);
+    return response.data;
+  }
+
+  // Get monthly promotion stats
+  async getMonthlyPromotionStats(year: number, month: number) {
+    const response = await apiClient.get(`/api/dashboard/promotions/stats/${year}/${month}`);
+    return response.data;
+  }
+  
+  // Add method for refreshing auth token
   async refreshAuthToken(): Promise<boolean> {
     try {
-      const response = await apiClient.get('auth/refresh');
+      const response = await apiClient.post('/api/auth/refresh-token');
       if (response.data && response.data.token) {
-        // Save the new token
         localStorage.setItem('token', response.data.token);
         return true;
       }
       return false;
     } catch (error) {
-      console.error('Error refreshing auth token:', error);
+      console.error('Failed to refresh token:', error);
       return false;
-    }
-  }
-
-  // Track a product view
-  async trackProductView(productId: number): Promise<void> {
-    await apiClient.post('/dashboard/products/track-view', { productId });
-  }
-
-  // Get monthly product stats
-  async getMonthlyProductStats(year: number, month: number) {
-    try {
-      const response = await apiClient.get(`/dashboard/products/stats/${year}/${month}`);
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching product stats:', error);
-      return null;
-    }
-  }
-
-  // Get monthly promotion stats
-  async getMonthlyPromotionStats(year: number, month: number) {
-    try {
-      const response = await apiClient.get(`/dashboard/promotions/stats/${year}/${month}`);
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching promotion stats:', error);
-      return null;
-    }
-  }
-
-  // Get monthly product statistics (legacy method for compatibility)
-  async getMonthlyProductStatistics(month: number, year: number): Promise<MonthlyProductStats> {
-    try {
-      const response = await this.getMonthlyProductStats(year, month);
-      // Transform to old format for compatibility
-      return {
-        totalProducts: 0, // This will be filled by other call
-        totalViews: response.data.summary.totalViews,
-        weeklyViews: response.data.weeklyData.map((week: any) => ({
-          week: week.name.replace('Week ', ''),
-          count: week.views
-        })),
-        estimatedRevenue: response.data.summary.estimatedRevenue,
-        change: {
-          products: '0%',
-          views: response.data.summary.viewsPercentChange + '%'
-        }
-      };
-    } catch (error) {
-      console.error('Error in getMonthlyProductStatistics:', error);
-      // Return default data in case of error
-      return {
-        totalProducts: 0,
-        totalViews: 0,
-        weeklyViews: [],
-        estimatedRevenue: 0,
-        change: {
-          products: '0%',
-          views: '0%'
-        }
-      };
-    }
-  }
-
-  async getPromotionStatsByMonth(year: number, month: number): Promise<PromotionStatResponse> {
-    try {
-      const response = await apiClient.get(`/statistics/promotions/month/${year}/${month}`);
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching promotion stats by month:', error);
-      throw error;
     }
   }
 }

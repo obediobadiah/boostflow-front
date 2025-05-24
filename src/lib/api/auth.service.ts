@@ -41,34 +41,73 @@ apiClient.interceptors.request.use(
 interface AuthResponse {
   user: {
     id: number;
-    name: string;
+    firstName: string;
+    lastName: string;
     email: string;
     role: string;
+    phone?: string;
+    company?: string;
+    website?: string;
+    bio?: string;
   };
   token: string;
 }
 
 class AuthService {
   async login(email: string, password: string): Promise<AuthResponse> {
-    const response = await apiClient.post('/auth/login', { email, password });
+    const response = await apiClient.post('/api/auth/login', { email, password });
     return response.data;
   }
 
-  async register(name: string, email: string, password: string, role?: string): Promise<AuthResponse> {
-    const response = await apiClient.post('/auth/register', { name, email, password, role });
+  async register(
+    firstName: string, 
+    lastName: string, 
+    email: string, 
+    password: string, 
+    phone?: string, 
+    company?: string, 
+    website?: string, 
+    bio?: string, 
+    role?: string
+  ): Promise<AuthResponse> {
+    const response = await apiClient.post('/api/auth/register', { 
+      firstName, 
+      lastName, 
+      email, 
+      password, 
+      phone, 
+      company, 
+      website, 
+      bio, 
+      role 
+    });
     return response.data;
   }
 
   async getCurrentUser() {
-    const response = await apiClient.get('/auth/me');
+    const response = await apiClient.get('/api/auth/me');
     return response.data;
   }
 
   async logout() {
     try {
-      await apiClient.post('/auth/logout');
+      await apiClient.post('/api/auth/logout');
     } catch (error) {
       console.error('Error during logout:', error);
+    }
+  }
+  
+  async refreshToken(): Promise<boolean> {
+    try {
+      const response = await apiClient.post('/api/auth/refresh-token');
+      if (response.data && response.data.token) {
+        localStorage.setItem('token', response.data.token);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Failed to refresh token:', error);
+      return false;
     }
   }
 }

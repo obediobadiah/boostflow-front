@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { FiSend, FiLink, FiTrendingUp, FiDollarSign, FiShoppingBag, FiBarChart2, FiPlus, FiEye, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import { useAppSelector } from '@/redux/store';
 import { dashboardService } from '@/lib/api/dashboard.service';
+import { authService } from '@/lib/api/auth.service';
 import type { PromotionStats, ProductStats, PaginatedResponse, PromotionAggregateStats, MonthlyProductStats } from '@/lib/api/dashboard.service';
 import { Pagination } from '@/components/ui/pagination';
 import {
@@ -118,7 +119,7 @@ export default function HomePage() {
     console.error('Authentication error:', error);
 
     // Try to refresh the token
-    const tokenRefreshed = await dashboardService.refreshAuthToken();
+    const tokenRefreshed = await authService.refreshToken();
 
     // If token refresh failed, redirect to login
     if (!tokenRefreshed) {
