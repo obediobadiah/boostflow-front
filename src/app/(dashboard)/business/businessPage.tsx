@@ -27,7 +27,7 @@ export default function BusinessDashboard() {
     <main className="flex-1 p-4 lg:p-8">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Business Dashboard</h1>
-        <p className="text-gray-600">Welcome back, {user?.name}! Here's an overview of your business</p>
+        <p className="text-gray-600">Welcome back, {user?.firstName} {user?.lastName}! Here's an overview of your business</p>
       </div>
 
       {/* Stats Grid */}
