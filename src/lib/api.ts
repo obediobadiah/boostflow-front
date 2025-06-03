@@ -1,9 +1,27 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
+// Function to normalize API URL and prevent duplicate /api segments
+const normalizeApiUrl = () => {
+  let baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api';
+  
+  // Remove trailing slash if present
+  baseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+  
+  // If the URL already ends with /api, remove it to avoid duplication
+  if (baseUrl.endsWith('/api')) {
+    console.log(`API URL contains /api suffix: ${baseUrl}`);
+    // We'll add /api in the routes, so remove it from the base URL
+    baseUrl = baseUrl.slice(0, -4);
+    console.log(`Normalized API URL: ${baseUrl}`);
+  }
+  
+  return baseUrl;
+};
+
 // Create axios instance with base URL and default headers
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api',
+  baseURL: normalizeApiUrl(),
   headers: {
     'Content-Type': 'application/json'
   }
