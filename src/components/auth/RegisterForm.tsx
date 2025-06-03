@@ -81,6 +81,36 @@ export function RegisterForm() {
     }
     
     try {
+      // Check API connectivity first (debug only)
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+        console.log('Checking API connectivity to:', apiUrl);
+        
+        const testResponse = await fetch(`${apiUrl}/api/auth/health-check`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }).catch(err => {
+          console.error('API connectivity test failed:', err);
+          return null;
+        });
+        
+        if (testResponse) {
+          console.log('API connectivity test status:', testResponse.status);
+          if (testResponse.ok) {
+            console.log('API is reachable');
+          } else {
+            console.warn('API returned error status:', testResponse.status);
+          }
+        } else {
+          console.warn('API connectivity test failed with network error');
+        }
+      } catch (err) {
+        console.error('Error during API connectivity check:', err);
+      }
+      
+      // Proceed with registration
       const resultAction = await dispatch(register({ 
         firstName,
         lastName,
