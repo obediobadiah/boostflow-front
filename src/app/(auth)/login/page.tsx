@@ -1,3 +1,4 @@
+import React from 'react';
 import Link from 'next/link';
 import { LoginForm } from '../../../components/auth/LoginForm';
 import { SocialAuthButtons } from '../../../components/SocialAuthButtons';
@@ -38,4 +39,4 @@ export default function Login() {
       </div>
     </div>
   );
-}
+} 

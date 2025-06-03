@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { useAppSelector, useAppDispatch } from '@/redux/store';
 import { getCurrentUser } from '@/redux/slices/authSlice';
 import Header from '@/components/layout/header';
 import Sidebar from '@/components/layout/sidebar';
 import MobileSidebar from '@/components/layout/mobile-sidebar';
-import Cookies from 'js-cookie';
 
 export default function DashboardLayout({
   children,
@@ -18,34 +18,33 @@ export default function DashboardLayout({
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { isAuthenticated, isLoading, user } = useAppSelector((state) => state.auth);
+  
+  // Use NextAuth session
+  const { data: session, status } = useSession();
+  const isSessionLoading = status === 'loading';
+  const isSessionAuthenticated = status === 'authenticated';
 
   useEffect(() => {
-    // Try to load current user if we don't have one yet
-    if (!isLoading) {
-      // Always try to fetch user data if we're authenticated but don't have user data
-      if (isAuthenticated && !user) {
-        dispatch(getCurrentUser());
-      }
-      // Try to fetch if we have a token but aren't authenticated yet
-      else if (!isAuthenticated) {
-        const hasToken = localStorage.getItem('token') || Cookies.get('auth_token');
-        if (hasToken) {
+    console.log('Session status:', status);
+    console.log('Session data:', session);
+    
+    // Use NextAuth session status to determine authentication
+    if (!isSessionLoading) {
+      if (isSessionAuthenticated && session?.user) {
+        // We have a valid NextAuth session, try to get additional user data if needed
+        if (!user) {
           dispatch(getCurrentUser());
-        } else {
-          // If no token, redirect to login without making API call
-          router.push('/login');
         }
+      } else {
+        // No valid NextAuth session, redirect to login
+        console.log('Redirecting to login: No valid session');
+        router.push('/login');
       }
     }
-
-    // Redirect to login if not authenticated after loading
-    if (!isLoading && !isAuthenticated) {
-      router.push('/login');
-    }
-  }, [isAuthenticated, isLoading, dispatch, router, user]);
+  }, [session, status, isSessionLoading, dispatch, router, user]);
 
   // If still loading, show a loading state
-  if (isLoading) {
+  if (isSessionLoading || isLoading) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <div className="text-center">
@@ -54,6 +53,13 @@ export default function DashboardLayout({
         </div>
       </div>
     );
+  }
+
+  // If not authenticated after loading, redirect (though this should be handled by the middleware)
+  if (!isSessionLoading && !isSessionAuthenticated) {
+    console.log('Not authenticated, should redirect');
+    router.push('/login');
+    return null;
   }
 
   // If authenticated, render the dashboard layout

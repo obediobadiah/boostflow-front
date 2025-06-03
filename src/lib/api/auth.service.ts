@@ -1,4 +1,5 @@
 import axios from 'axios';
+import Cookies from 'js-cookie';
 
 // Create API client
 const apiClient = axios.create({
@@ -53,9 +54,18 @@ interface AuthResponse {
   token: string;
 }
 
+interface SocialAuthData {
+  provider: string;
+  providerAccountId?: string;
+  email?: string;
+  name?: string;
+  image?: string;
+}
+
 class AuthService {
   async login(email: string, password: string): Promise<AuthResponse> {
     const response = await apiClient.post('/api/auth/login', { email, password });
+    this.setToken(response.data.token);
     return response.data;
   }
 
@@ -81,7 +91,36 @@ class AuthService {
       bio, 
       role 
     });
+    this.setToken(response.data.token);
     return response.data;
+  }
+
+  async socialLogin(data: SocialAuthData): Promise<AuthResponse> {
+    const response = await apiClient.post('/api/auth/social-login', data);
+    this.setToken(response.data.token);
+    return response.data;
+  }
+
+  async processSocialAuthCallback(token: string): Promise<void> {
+    // Store the token securely
+    this.setToken(token);
+    
+    // You could also verify the token with your backend here
+    // or fetch additional user data if needed
+  }
+
+  private setToken(token: string): void {
+    if (typeof window !== 'undefined') {
+      // Store in localStorage for JavaScript access
+      localStorage.setItem('token', token);
+      
+      // Also store in HTTP-only cookie for better security
+      Cookies.set('auth_token', token, { 
+        expires: 7, // 7 days
+        path: '/',
+        sameSite: 'strict'
+      });
+    }
   }
 
   async getCurrentUser() {
@@ -92,8 +131,14 @@ class AuthService {
   async logout() {
     try {
       await apiClient.post('/api/auth/logout');
+      // Clear tokens
+      localStorage.removeItem('token');
+      Cookies.remove('auth_token');
     } catch (error) {
       console.error('Error during logout:', error);
+      // Still clear tokens even if API call fails
+      localStorage.removeItem('token');
+      Cookies.remove('auth_token');
     }
   }
   
@@ -101,7 +146,7 @@ class AuthService {
     try {
       const response = await apiClient.post('/api/auth/refresh-token');
       if (response.data && response.data.token) {
-        localStorage.setItem('token', response.data.token);
+        this.setToken(response.data.token);
         return true;
       }
       return false;

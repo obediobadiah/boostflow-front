@@ -2,8 +2,12 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
-  // Skip middleware for static files
-  if (request.nextUrl.pathname.startsWith('/uploads/')) {
+  // Skip middleware for static files and API routes
+  if (
+    request.nextUrl.pathname.startsWith('/uploads/') ||
+    request.nextUrl.pathname.startsWith('/api/auth/') ||
+    request.nextUrl.pathname.startsWith('/auth/callback')
+  ) {
     return NextResponse.next();
   }
 
@@ -11,7 +15,7 @@ export function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
   
   // Define public paths
-  const publicPaths = ['/', '/login', '/register', '/auth/callback'];
+  const publicPaths = ['/', '/login', '/register'];
   const isPublicPath = publicPaths.includes(path);
   
   // Get the token from cookies
@@ -20,10 +24,6 @@ export function middleware(request: NextRequest) {
   
   // If the user is on a public path and authenticated
   if (isPublicPath && isAuthenticated) {
-    // Don't redirect auth callback
-    if (path === '/auth/callback') {
-      return NextResponse.next();
-    }
     return NextResponse.redirect(new URL('/home', request.url));
   }
   
@@ -47,7 +47,9 @@ export const config = {
      * - images (public image files)
      * - logo directory (for app logos)
      * - uploads directory (for user uploaded files)
+     * - api/auth (NextAuth API routes)
+     * - auth/callback (OAuth callback routes)
      */
-    '/((?!_next/static|_next/image|favicon.ico|images/|public|logo/|uploads/).*)',
+    '/((?!_next/static|_next/image|favicon.ico|images/|public|logo/|uploads/|api/auth/|auth/callback/).*)',
   ],
 }; 

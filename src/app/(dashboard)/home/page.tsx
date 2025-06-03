@@ -139,26 +139,32 @@ export default function HomePage() {
     try {
       // Fetch product stats directly from our new endpoint
       const response = await dashboardService.getMonthlyProductStats(year, month);
-      if (response && response.success) {
+      console.log('Monthly product stats response:', response);
+      
+      if (response && response.success && response.data) {
         // Use the real data directly from the response
-        setRealProductData(response.data.weeklyData);
+        const weeklyData = response.data.weeklyData || [];
+        console.log('Product weekly data:', weeklyData);
+        
+        setRealProductData(weeklyData);
         
         // Set monthly stats for other displays
         setMonthlyProductStats({
           totalProducts: productStats?.totalProducts || 0,
-          totalViews: response.data.summary.totalViews,
-          weeklyViews: response.data.weeklyData.map((item: any) => ({
+          totalViews: response.data.summary?.totalViews || 0,
+          weeklyViews: weeklyData.map((item: any) => ({
             week: item.name.replace('Week ', ''),
             count: item.views
           })),
-          estimatedRevenue: response.data.summary.estimatedRevenue,
+          estimatedRevenue: response.data.summary?.estimatedRevenue || 0,
           change: {
-            products: response.data.summary.productsPercentChange + '%',
-            views: response.data.summary.viewsPercentChange + '%'
+            products: (response.data.summary?.productsPercentChange || '0') + '%',
+            views: (response.data.summary?.viewsPercentChange || '0') + '%'
           }
         });
       } else {
         // If API call fails, use empty array instead of sample data
+        console.warn('No success flag in product stats response');
         setRealProductData([]);
       }
     } catch (error) {
@@ -174,15 +180,20 @@ export default function HomePage() {
     try {
       // Fetch promotion stats directly from our new endpoint
       const response = await dashboardService.getMonthlyPromotionStats(year, month);
+      console.log('Monthly promotion stats response:', response);
       
-      if (response && response.success) {
+      if (response && response.success && response.data) {
         // Use the real promotion data from the API
+        const weeklyData = response.data.weeklyData || [];
+        console.log('Promotion weekly data:', weeklyData);
+        
         setMonthlyPromotionData({
           ...monthlyPromotionData,
-          [currentPromotionMonth]: response.data.weeklyData
+          [currentPromotionMonth]: weeklyData
         });
       } else {
         // If API call fails, set empty array for this month
+        console.warn('No success flag in promotion stats response');
         setMonthlyPromotionData({
           ...monthlyPromotionData,
           [currentPromotionMonth]: []
@@ -319,7 +330,24 @@ export default function HomePage() {
     {
       id: 'earnings',
       title: 'Earnings',
-      value: promotionStats ? `$${promotionStats.earnings}` : '$0',
+      value: promotionStats ? 
+        (() => {
+          try {
+            if (typeof promotionStats.earnings === 'number') {
+              return `$${promotionStats.earnings.toFixed(2)}`;
+            } else if (typeof promotionStats.earnings === 'string') {
+              // Handle string by parsing it to float first
+              return `$${parseFloat(promotionStats.earnings).toFixed(2)}`;
+            } else {
+              // Fallback for unexpected types
+              return '$0.00';
+            }
+          } catch (e) {
+            console.error('Error formatting earnings:', e, promotionStats.earnings);
+            return '$0.00';
+          }
+        })() : 
+        '$0.00',
       icon: <FiDollarSign className="h-5 w-5" />,
       change: promotionStats?.change?.earnings || '0',
       color: 'bg-purple-500'
@@ -435,7 +463,6 @@ export default function HomePage() {
           </div>
           <div className="h-64 w-full rounded-md bg-gray-50 p-3">
             <div className="text-xs text-gray-600 mb-1">Product Performance</div>
-            {/* Render the chart with real data only */}
             <ResponsiveContainer width="100%" height="85%">
               <BarChart 
                 data={realProductData}
@@ -538,7 +565,11 @@ export default function HomePage() {
                 {products && products.length > 0 ? (
                   products.map((product: any) => (
                     <tr key={product.id} className="hover:bg-gray-50">
-                      <td className="px-3 py-2 text-gray-900 font-medium">{product.name.length > 30 ? `${product.name.substring(0, 30)}...` : product.name}</td>
+                      <td className="px-3 py-2 text-gray-900 font-medium">
+                        {product.name ? 
+                          (product.name.length > 30 ? `${product.name.substring(0, 30)}...` : product.name) 
+                          : 'Unnamed Product'}
+                      </td>
                       <td className="px-3 py-2 text-gray-600">{product.price}</td>
                       <td className="px-3 py-2 text-gray-600">{product.category}</td>
                       <td className="px-3 py-2 text-gray-600">{product.commissionRate}</td>
@@ -614,7 +645,7 @@ export default function HomePage() {
                 {promotions && promotions.length > 0 ? (
                   promotions.map((promotion: any) => (
                     <tr key={promotion.id} className="hover:bg-gray-50">
-                      <td className="px-3 py-2 text-gray-900 font-medium">{promotion.name.length > 30 ? `${promotion.name.substring(0, 30)}...` : promotion.name}</td>
+                      <td className="px-3 py-2 text-gray-900 font-medium">{ promotion.product.name }</td>
                       <td className="px-3 py-2 text-gray-600">{promotion.commission}</td>
                       <td className="px-3 py-2 text-gray-600">{promotion.clicks}</td>
                       <td className="px-3 py-2 text-gray-600">

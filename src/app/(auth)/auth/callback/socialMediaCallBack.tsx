@@ -13,26 +13,28 @@ export default function AuthCallback() {
   const dispatch = useAppDispatch();
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [errorMessage, setErrorMessage] = useState<string>('');
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function processAuth() {
       try {
-        setIsLoading(true);
-        
         // Get token from URL params
-        const searchParams = new URLSearchParams(window.location.search);
         const token = searchParams.get('token');
         const error = searchParams.get('error');
         
         // Handle error case
         if (error) {
-          setErrorMessage(error);
+          console.error('Auth error from callback:', error);
+          setStatus('error');
+          setErrorMessage(error === 'BackendAuthFailed' 
+            ? 'Authentication failed on the server. Please try again.' 
+            : 'Authentication failed. Please try again.');
           return;
         }
         
         // Handle missing token
         if (!token) {
+          console.error('No authentication token received');
+          setStatus('error');
           setErrorMessage('No authentication token received');
           return;
         }
@@ -43,18 +45,22 @@ export default function AuthCallback() {
         // Get user data
         await dispatch(getCurrentUser()).unwrap();
         
-        // Redirect to home page
-        router.push('/home');
+        // Show success state briefly before redirect
+        setStatus('success');
+        
+        // Redirect to home page after a short delay to show success message
+        setTimeout(() => {
+          router.push('/home');
+        }, 1500);
       } catch (err) {
         console.error('Auth callback error:', err);
+        setStatus('error');
         setErrorMessage('Authentication failed. Please try again.');
-      } finally {
-        setIsLoading(false);
       }
     }
     
     processAuth();
-  }, [dispatch, router]);
+  }, [dispatch, router, searchParams]);
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50">
@@ -65,7 +71,7 @@ export default function AuthCallback() {
               Processing your login...
             </h2>
             <div className="mt-6">
-              <div className="w-12 h-12 rounded-full border-t-2 border-b-2 border-primary-600 animate-spin mx-auto"></div>
+              <div className="w-12 h-12 rounded-full border-t-2 border-b-2 border-orange-600 animate-spin mx-auto"></div>
             </div>
             <p className="mt-4 text-gray-600">Please wait while we authenticate your account.</p>
           </>
@@ -98,7 +104,7 @@ export default function AuthCallback() {
             <p className="mt-2 text-gray-600">{errorMessage}</p>
             <button
               onClick={() => router.push('/login')}
-              className="mt-6 px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="mt-6 px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500"
             >
               Return to Login
             </button>

@@ -6,6 +6,7 @@ const nextConfig = {
   },
   async rewrites() {
     return [
+      // Handle API routes except auth and upload
       {
         source: '/api/:path*',
         destination: 'http://localhost:5001/api/:path*',
@@ -16,6 +17,11 @@ const nextConfig = {
             value: 'true',
           },
         ],
+      },
+      // Keep these routes handled by Next.js
+      {
+        source: '/api/auth/:path*',
+        destination: '/api/auth/:path*',
       },
       {
         source: '/api/upload',
