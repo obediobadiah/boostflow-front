@@ -3,7 +3,9 @@ import Cookies from 'js-cookie';
 
 // Function to normalize API URL and prevent duplicate /api segments
 const normalizeApiUrl = () => {
-  let baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api';
+  let baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+  
+  console.log('Original API URL:', baseUrl);
   
   // Remove trailing slash if present
   baseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
@@ -14,6 +16,16 @@ const normalizeApiUrl = () => {
     // We'll add /api in the routes, so remove it from the base URL
     baseUrl = baseUrl.slice(0, -4);
     console.log(`Normalized API URL: ${baseUrl}`);
+  }
+  
+  // Final check - ensure we have a valid URL
+  try {
+    new URL(baseUrl);
+    console.log('Final normalized API URL:', baseUrl);
+  } catch (e) {
+    console.error('Invalid API URL:', baseUrl);
+    // Fall back to a default if URL is invalid
+    baseUrl = 'http://localhost:5001';
   }
   
   return baseUrl;
@@ -99,7 +111,8 @@ api.interceptors.response.use(
 export const authService = {
   login: async (email: string, password: string) => {
     try {
-      const response = await api.post('/auth/login', { email, password });
+      // Add /api prefix to auth endpoints
+      const response = await api.post('/api/auth/login', { email, password });
       return response.data;
     } catch (error: any) {
       // Log the error for debugging
@@ -120,7 +133,14 @@ export const authService = {
     bio?: string,
     role: string = 'business'
   ) => {
-    const response = await api.post('/auth/register', {
+    // Debug the API configuration in production
+    console.log('Register API call:');
+    console.log('- Base URL:', api.defaults.baseURL);
+    console.log('- Full URL:', `${api.defaults.baseURL}/api/auth/register`);
+    console.log('- Environment:', process.env.NODE_ENV);
+    console.log('- API URL from env:', process.env.NEXT_PUBLIC_API_URL);
+    
+    const userData = {
       firstName,
       lastName,
       email,
@@ -130,8 +150,52 @@ export const authService = {
       website,
       bio,
       role
-    });
-    return response.data;
+    };
+    
+    try {
+      // Add /api prefix to auth endpoints
+      const response = await api.post('/api/auth/register', userData);
+      return response.data;
+    } catch (error: any) {
+      // Enhanced error logging for debugging
+      console.error('Registration error with axios:', {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        url: error.config?.url,
+        baseURL: error.config?.baseURL,
+        method: error.config?.method
+      });
+      
+      // Try with direct fetch as fallback
+      console.log('Trying registration with direct fetch as fallback');
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+        const directUrl = `${apiUrl}/api/auth/register`;
+        console.log('Direct fetch URL:', directUrl);
+        
+        const fetchResponse = await fetch(directUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(userData)
+        });
+        
+        if (!fetchResponse.ok) {
+          throw new Error(`Direct fetch failed with status: ${fetchResponse.status}`);
+        }
+        
+        const data = await fetchResponse.json();
+        console.log('Direct fetch succeeded:', data);
+        return data;
+      } catch (fetchError: any) {
+        console.error('Direct fetch registration failed:', fetchError);
+        // Re-throw the original error
+        throw error;
+      }
+    }
   },
   logout: () => {
     // The function in authSlice handles both localStorage and cookies removal
@@ -151,7 +215,8 @@ export const authService = {
     
     try {
       // Access the endpoint with the correct URL structure
-      const response = await api.get('/auth/me');
+      // Add /api prefix to auth endpoints
+      const response = await api.get('/api/auth/me');
       return response.data;
     } catch (error) {
       console.error('getCurrentUser error:', error);
