@@ -250,15 +250,15 @@ export const authService = {
 // User services
 export const userService = {
   getProfile: async () => {
-    const response = await api.get('/users/profile');
+    const response = await api.get('/api/users/profile');
     return response.data;
   },
   updateProfile: async (userData: any) => {
-    const response = await api.put('/users/profile', userData);
+    const response = await api.put('/api/users/profile', userData);
     return response.data;
   },
   changePassword: async (currentPassword: string, newPassword: string) => {
-    const response = await api.put('/users/change-password', {
+    const response = await api.put('/api/users/change-password', {
       currentPassword,
       newPassword
     });
@@ -266,23 +266,23 @@ export const userService = {
   },
   // Admin functions for user management
   getAllUsers: async () => {
-    const response = await api.get('/users');
+    const response = await api.get('/api/users');
     return response.data;
   },
   getUserById: async (id: string) => {
-    const response = await api.get(`/users/${id}`);
+    const response = await api.get(`/api/users/${id}`);
     return response.data;
   },
   updateUser: async (id: string, userData: any) => {
-    const response = await api.put(`/users/${id}`, userData);
+    const response = await api.put(`/api/users/${id}`, userData);
     return response.data;
   },
   updateUserRole: async (id: string, role: string) => {
-    const response = await api.put(`/users/${id}/role`, { role });
+    const response = await api.put(`/api/users/${id}/role`, { role });
     return response.data;
   },
   deleteUser: async (id: string) => {
-    const response = await api.delete(`/users/${id}`);
+    const response = await api.delete(`/api/users/${id}`);
     return response.data;
   }
 };
@@ -290,13 +290,13 @@ export const userService = {
 // Product services
 export const productService = {
   getAllProducts: async () => {
-    const response = await api.get('/products');
+    const response = await api.get('/api/products');
     return response.data;
   },
 
   getAllProductsStatistique: async (p0: { params: { page: number; limit: number; }; }) => {
     try {
-      const response = await api.get('/products', { 
+      const response = await api.get('/api/products', { 
         params: p0.params 
       });
       
@@ -348,7 +348,7 @@ export const productService = {
   
   getProductById: async (id: string) => {
     try {
-      const response = await api.get(`/products/${id}`);
+      const response = await api.get(`/api/products/${id}`);
       return response.data;
     } catch (error: any) {
       console.error('Error fetching product:', {
@@ -370,7 +370,7 @@ export const productService = {
     };
     
     try {
-      const response = await api.post('/products', data);
+      const response = await api.post('/api/products', data);
       return response.data;
     } catch (error: any) {
       console.error('Product creation error:', {
@@ -382,16 +382,16 @@ export const productService = {
     }
   },
   updateProduct: async (id: string, productData: any) => {
-    const response = await api.put(`/products/${id}`, productData);
+    const response = await api.put(`/api/products/${id}`, productData);
     return response.data;
   },
   duplicateProduct: async (id: string) => {
     try {
       // Get the original product first to check if it exists
-      const product = await api.get(`/products/${id}`);
+      const product = await api.get(`/api/products/${id}`);
       
       // Then attempt to duplicate it
-      const response = await api.post(`/products/${id}/duplicate`);
+      const response = await api.post(`/api/products/${id}/duplicate`);
       return response.data;
     } catch (error: any) {
       console.error('Error duplicating product:', {
@@ -410,7 +410,7 @@ export const productService = {
     }
   },
   deleteProduct: async (id: string) => {
-    const response = await api.delete(`/products/${id}`);
+    const response = await api.delete(`/api/products/${id}`);
     return response.data;
   }
 };
@@ -418,13 +418,13 @@ export const productService = {
 // Promotion services
 export const promotionService = {
   getMyPromotions: async () => {
-    const response = await api.get('/promotions');
+    const response = await api.get('/api/promotions');
     return response.data;
   },
 
   getMyPromotionsStatistics: async (p0: { params: { page: number; limit: number; }; }) => {
     try {
-      const response = await api.get('/promotions', { 
+      const response = await api.get('/api/promotions', { 
         params: p0.params 
       });
       
@@ -474,19 +474,19 @@ export const promotionService = {
     }
   },
   getPromotionById: async (id: string) => {
-    const response = await api.get(`/promotions/${id}`);
+    const response = await api.get(`/api/promotions/${id}`);
     return response.data;
   },
   createPromotion: async (promotionData: any) => {
-    const response = await api.post('/promotions', promotionData);
+    const response = await api.post('/api/promotions', promotionData);
     return response.data;
   },
   addSocialMediaPost: async (promotionId: string, postData: any) => {
-    const response = await api.post(`/promotions/${promotionId}/social-media-post`, postData);
+    const response = await api.post(`/api/promotions/${promotionId}/social-media-post`, postData);
     return response.data;
   },
   deletePromotion: async (id: string) => {
-    const response = await api.delete(`/promotions/${id}`);
+    const response = await api.delete(`/api/promotions/${id}`);
     return response.data;
   }
 };
