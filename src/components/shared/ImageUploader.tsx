@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Button } from '../ui/button';
+import Image from 'next/image';
 
 interface ImageUploaderProps {
   initialImages?: string[];
@@ -14,23 +15,54 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
 }) => {
   const [images, setImages] = useState<string[]>(initialImages);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.length) return;
     
     setIsUploading(true);
+    setUploadProgress(Array(e.target.files.length).fill(0));
     
-    // For the purpose of this demo, we'll just create fake image URLs
-    // In a real application, you would upload these to a server/cloud storage
-    const newImages = Array.from(e.target.files).map(file => {
-      const id = Math.random().toString(36).substring(2, 9);
-      // Create a fake URL - in a real app, this would be the URL from your server/cloud
-      return `https://example.com/image-${id}.jpg`;
-    });
+    const files = Array.from(e.target.files);
+    const newImageUrls: string[] = [];
+    
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      
+      try {
+        // Create form data
+        const formData = new FormData();
+        formData.append('image', file);
+        
+        // Upload the image
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+        
+        if (!response.ok) {
+          const error = await response.json();
+          console.error('Upload error:', error);
+          continue;
+        }
+        
+        const result = await response.json();
+        if (result.success && result.url) {
+          newImageUrls.push(result.url);
+          
+          // Update progress
+          const newProgress = [...uploadProgress];
+          newProgress[i] = 100;
+          setUploadProgress(newProgress);
+        }
+      } catch (error) {
+        console.error('Error uploading image:', error);
+      }
+    }
     
     // Combine with existing images but respect maxImages limit
-    const updatedImages = [...images, ...newImages].slice(0, maxImages);
+    const updatedImages = [...images, ...newImageUrls].slice(0, maxImages);
     
     setImages(updatedImages);
     onChange(updatedImages);
@@ -55,10 +87,13 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
         {images.map((url, index) => (
           <div key={index} className="relative">
             <div className="w-24 h-24 border rounded-md overflow-hidden">
-              {/* In a real app, this would show the actual image */}
-              <div className="w-full h-full bg-gray-200 flex items-center justify-center text-sm text-gray-500">
-                Image {index + 1}
-              </div>
+              <Image 
+                src={url} 
+                alt={`Image ${index + 1}`} 
+                width={96} 
+                height={96} 
+                className="object-cover w-full h-full"
+              />
             </div>
             <button 
               type="button"

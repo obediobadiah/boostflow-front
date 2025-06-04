@@ -4,6 +4,10 @@ import { join } from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
 import path from 'path';
+import { put, list, del } from '@vercel/blob';
+
+// Determine if we're in production
+const isProduction = process.env.NODE_ENV === 'production';
 
 // NOTE: For production environments, consider using external storage solutions like:
 // - Amazon S3
@@ -13,8 +17,10 @@ import path from 'path';
 // This would make your uploads more scalable and avoid the issues with serving
 // dynamically uploaded files in a Next.js production environment.
 
-// Ensure uploads directory exists
+// Ensure uploads directory exists (for local development)
 const ensureUploadsDirectory = async () => {
+  if (isProduction) return ''; // Not needed in production
+
   try {
     const publicDir = join(process.cwd(), 'public', 'uploads');
     await mkdir(publicDir, { recursive: true });
@@ -55,22 +61,33 @@ export async function POST(request: Request) {
     }
 
     // Generate unique filename
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
     const uniqueId = uuidv4();
     const extension = file.name.split('.').pop() || 'jpg';
     const filename = `${uniqueId}.${extension}`;
 
-    // Save file to public directory
-    const publicDir = await ensureUploadsDirectory();
-    
-    const filepath = join(publicDir, filename);
-    await writeFile(filepath, buffer);
+    let url: string;
 
-    // Return the URL that can be used to access the file
-    // We'll use the /api/upload/:filename route to serve the file
-    const url = `/api/upload/${filename}`;
-    console.log(`File saved to ${filepath}, URL: ${url}`);
+    if (isProduction) {
+      // Use Vercel Blob in production
+      const blob = await put(filename, file, {
+        access: 'public',
+      });
+      
+      url = blob.url;
+      console.log(`File uploaded to Vercel Blob: ${url}`);
+    } else {
+      // Save file to public directory in development
+      const bytes = await file.arrayBuffer();
+      const buffer = Buffer.from(bytes);
+      
+      const publicDir = await ensureUploadsDirectory();
+      const filepath = join(publicDir, filename);
+      await writeFile(filepath, buffer);
+      
+      // Return a URL that can be used to access the file locally
+      url = `/api/upload/${filename}`;
+      console.log(`File saved locally: ${filepath}, URL: ${url}`);
+    }
 
     return NextResponse.json({ success: true, url });
   } catch (error) {
@@ -82,10 +99,13 @@ export async function POST(request: Request) {
   }
 }
 
-// Handle serving uploaded files
-export async function GET(
-  request: NextRequest
-) {
+// Handle serving uploaded files (only used in development)
+export async function GET(request: NextRequest) {
+  // In production, files are served directly from Vercel Blob
+  if (isProduction) {
+    return new NextResponse('Not found - Files are served from Vercel Blob in production', { status: 404 });
+  }
+
   try {
     const pathname = request.nextUrl.pathname;
     const filename = pathname.replace('/api/upload/', '');
