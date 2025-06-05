@@ -9,10 +9,11 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 export const metadata: Metadata = {
   title: "BoostFlow | Business & Product Promotion App",
   description: "Promote products, automatically post on social media, and track commissions.",
-  icons: {
-    icon: '/logo/Boost_Flow_App.png',
-    apple: '/logo/Boost_Flow_App.png',
-  },
+  icons: [
+    { rel: 'icon', url: '/favicon.ico' },
+    { rel: 'icon', url: '/logo/Boost_Flow_App.png', type: 'image/png', sizes: '512x512' },
+    { rel: 'apple-touch-icon', url: '/logo/Boost_Flow_App.png' },
+  ],
 };
 
 export default function RootLayout({
@@ -22,6 +23,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* Force favicon refresh by adding a version query parameter */}
+        <link rel="icon" href="/favicon.ico?v=2" />
+        <link rel="icon" href="/logo/Boost_Flow_App.png?v=2" type="image/png" />
+        <link rel="apple-touch-icon" href="/logo/Boost_Flow_App.png?v=2" />
+      </head>
       <body className={`${inter.variable} font-sans`} suppressHydrationWarning>
         <Providers>
           {children}
